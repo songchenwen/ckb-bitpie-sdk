@@ -259,12 +259,13 @@ func buildCkbTransaction(fromAddr string, toAddr string, from *types.Script, to 
 	if err != nil {
 		return nil, nil, err
 	}
+	fromCapacity = 0
 	for _, cell := range liveCells.Objects {
 		if cell.Output.Type == nil && len(cell.OutputData) == 0 {
-			if cell.Output.Capacity < total+CkbCapacity {
-				continue
+			if fromCapacity > total+CkbCapacity {
+				break
 			}
-			fromCapacity = cell.Output.Capacity
+			fromCapacity += cell.Output.Capacity
 			tx.Inputs = append(tx.Inputs, &types.CellInput{
 				Since:          0,
 				PreviousOutput: cell.OutPoint,
@@ -274,11 +275,10 @@ func buildCkbTransaction(fromAddr string, toAddr string, from *types.Script, to 
 				Address: fromAddr,
 			})
 			tx.Witnesses = append(tx.Witnesses, []byte{})
-			break
 		}
 	}
 
-	if fromCapacity == 0 {
+	if fromCapacity < total+CkbCapacity {
 		return nil, nil, ErrInsufficientCkbBalance
 	}
 	emptyWitness, _ := transaction.EmptyWitnessArg.Serialize()
