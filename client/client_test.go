@@ -1,8 +1,9 @@
 package client
 
 import (
-	"github.com/shaojunda/ckb-bitpie-sdk/config"
 	"testing"
+
+	"github.com/shaojunda/ckb-bitpie-sdk/config"
 )
 
 func TestIsOldAcpAddress(t *testing.T) {
@@ -16,8 +17,8 @@ func TestIsOldAcpAddress(t *testing.T) {
 		Conf     *config.Config
 		Expected bool
 	}{
-		{"old acp address", "ckt1qjr2r35c0f9vhcdgslx2fjwa9tylevr5qka7mfgmscd33wlhfykyhazydxllj3dzvalznz08fs6dugc5mwkhxgdnkqu", conf, true},
-		{"new acp address", "ckt1qg8mxsu48mncexvxkzgaa7mz2g25uza4zpz062relhjmyuc52ps3razydxllj3dzvalznz08fs6dugc5mwkhxqlfuww", conf, false},
+		{"old acp address", "ckb1qg8mxsu48mncexvxkzgaa7mz2g25uza4zpz062relhjmyuc52ps3rg0ey4hrkr6sws7wtjsuv8qmnu7kmmy7u9ut8lp", conf, true},
+		{"new acp address", "ckb1qyp2r7f9dcas75r58nju58rpcxul84k7e8hqvma9q8", conf, false},
 	}
 
 	for _, c := range cases {
@@ -35,22 +36,34 @@ func TestPubkey2Address(t *testing.T) {
 		t.Error(err)
 	}
 	t.Run("generate new acp address", func(t *testing.T) {
-		addr, err := Pubkey2Address("0x027ed0f9a0a2b0c3ba4c328c7f5b04a0e4ec670da06dd511e611b5f1d205c432d7", true, false, conf)
+		addr, err := Pubkey2Address("0x024de021442989d81798d1eeedc983ab70b815949115b94b1b2b00b32f872e4ace", true, false, conf)
 		if err != nil {
 			t.Error(err)
 		}
-		expectedAcpAddr := "ckt1qyprj49vann9p94l4qf93xpamwpezh79d0vq4s04k0"
+		expectedAcpAddr := "ckb1qyp2r7f9dcas75r58nju58rpcxul84k7e8hqvma9q8"
 		if addr != expectedAcpAddr {
 			t.Fatalf("should return %s, but got %s", expectedAcpAddr, addr)
+		}
+		t.Log("generate new acp address success")
+	})
+
+	t.Run("generate none acp address", func(t *testing.T) {
+		addr, err := Pubkey2Address("0x024de021442989d81798d1eeedc983ab70b815949115b94b1b2b00b32f872e4ace", false, false, conf)
+		if err != nil {
+			t.Error(err)
+		}
+		expectedOldAcpAddr := "ckb1qyq2r7f9dcas75r58nju58rpcxul84k7e8hqzt8jm9"
+		if addr != expectedOldAcpAddr {
+			t.Fatalf("should return %s, but got %s", expectedOldAcpAddr, addr)
 		}
 	})
 
 	t.Run("generate old acp address", func(t *testing.T) {
-		addr, err := Pubkey2Address("0x027ed0f9a0a2b0c3ba4c328c7f5b04a0e4ec670da06dd511e611b5f1d205c432d7", true, true, conf)
+		addr, err := Pubkey2Address("0x024de021442989d81798d1eeedc983ab70b815949115b94b1b2b00b32f872e4ace", true, true, conf)
 		if err != nil {
 			t.Error(err)
 		}
-		expectedOldAcpAddr := "ckt1qjr2r35c0f9vhcdgslx2fjwa9tylevr5qka7mfgmscd33wlhfykykw254nkwv5ykh75pykyc8hdc8y2lc44asaumhu7"
+		expectedOldAcpAddr := "ckb1qg8mxsu48mncexvxkzgaa7mz2g25uza4zpz062relhjmyuc52ps3rg0ey4hrkr6sws7wtjsuv8qmnu7kmmy7u9ut8lp"
 		if addr != expectedOldAcpAddr {
 			t.Fatalf("should return %s, but got %s", expectedOldAcpAddr, addr)
 		}

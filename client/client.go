@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"github.com/shaojunda/ckb-bitpie-sdk/utils"
 	"math/big"
 	"strconv"
 	"time"
+
+	"github.com/shaojunda/ckb-bitpie-sdk/utils"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
@@ -45,11 +46,7 @@ func transaction2TxDict(rawTx *types.Transaction, blockNumber uint64, blockTime 
 		cell := previous.Transaction.Outputs[input.PreviousOutput.Index]
 
 		var addr string
-		if config.Network == "mainnet" {
-			addr, err = address.Generate(address.Mainnet, cell.Lock)
-		} else {
-			addr, err = address.Generate(address.Testnet, cell.Lock)
-		}
+		addr, err = LockScript2Address(cell.Lock, config)
 		if err != nil {
 			return nil, err
 		}
@@ -91,11 +88,7 @@ func transaction2TxDict(rawTx *types.Transaction, blockNumber uint64, blockTime 
 
 	for i, output := range rawTx.Outputs {
 		var addr string
-		if config.Network == "mainnet" {
-			addr, err = address.Generate(address.Mainnet, output.Lock)
-		} else {
-			addr, err = address.Generate(address.Testnet, output.Lock)
-		}
+		addr, err = LockScript2Address(output.Lock, config)
 		if err != nil {
 			return nil, err
 		}
@@ -148,11 +141,7 @@ func offlineTransaction2TxDict(inputs []tx.Input, rawTx *types.Transaction, conf
 
 	for i, output := range rawTx.Outputs {
 		var addr string
-		if config.Network == "mainnet" {
-			addr, err = address.Generate(address.Mainnet, output.Lock)
-		} else {
-			addr, err = address.Generate(address.Testnet, output.Lock)
-		}
+		addr, err = LockScript2Address(output.Lock, config)
 		if err != nil {
 			return nil, err
 		}
@@ -216,10 +205,17 @@ func GetTransaction(txHash string, client rpc.Client, config *config.Config) (*t
 }
 
 func LockScript2Address(script *types.Script, config *config.Config) (addr string, err error) {
+	fmt.Printf("LockScript2Address  codehash: %v \nhashtyep: %v \nargs: %x\n", script.CodeHash, script.HashType, script.Args)
 	if config.Network == "mainnet" {
-		addr, err = address.Generate(address.Mainnet, script)
+		addr, err = address.ConvertScriptToShortAddress(address.Mainnet, script)
+		if err != nil {
+			addr, err = address.ConvertScriptToFullAddress(address.Mainnet, script)
+		}
 	} else {
-		addr, err = address.Generate(address.Testnet, script)
+		addr, err = address.ConvertScriptToShortAddress(address.Testnet, script)
+		if err != nil {
+			addr, err = address.ConvertScriptToFullAddress(address.Testnet, script)
+		}
 	}
 	return
 }

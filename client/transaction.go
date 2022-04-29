@@ -5,9 +5,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/shaojunda/ckb-bitpie-sdk/utils"
 	"math/big"
 	"strconv"
+
+	"github.com/shaojunda/ckb-bitpie-sdk/utils"
 
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
@@ -175,7 +176,7 @@ func BuildAcpCellsTransferTransaction(oldAcpAddr string, client rpc.Client, conf
 			DepType: types.DepType(config.UDT.Deps[0].DepType),
 		})
 	}
-	emptyWitness, _ := transaction.EmptyWitnessArg.Serialize()
+	emptyWitness := transaction.Secp256k1EmptyWitnessArgPlaceholder
 	tx.Witnesses[0] = emptyWitness
 	fee, err := transaction.CalculateTransactionFee(tx, FeeRate)
 	if err != nil {
@@ -281,7 +282,7 @@ func buildCkbTransaction(fromAddr string, toAddr string, from *types.Script, to 
 	if fromCapacity < total+CkbCapacity {
 		return nil, nil, ErrInsufficientCkbBalance
 	}
-	emptyWitness, _ := transaction.EmptyWitnessArg.Serialize()
+	emptyWitness := transaction.Secp256k1EmptyWitnessArgPlaceholder
 
 	if toNormal {
 		tx.Witnesses[0] = emptyWitness
@@ -459,7 +460,7 @@ func buildUdtTransaction(fromAddr string, toAddr string, from *types.Script, to 
 	if !stopUdt {
 		return nil, nil, ErrInsufficientSudtBalance
 	}
-	emptyWitness, _ := transaction.EmptyWitnessArg.Serialize()
+	emptyWitness := transaction.Secp256k1EmptyWitnessArgPlaceholder
 	if toNormal {
 		tx.Witnesses[0] = emptyWitness
 	} else {
@@ -659,7 +660,7 @@ func BuildEmptyTransaction(fromAddr string, toAddr string, client rpc.Client, co
 		return nil, nil, ErrInsufficientCkbBalance
 	}
 
-	emptyWitness, _ := transaction.EmptyWitnessArg.Serialize()
+	emptyWitness := transaction.Secp256k1EmptyWitnessArgPlaceholder
 	if toNormal {
 		tx.Witnesses[0] = emptyWitness
 	} else {
@@ -726,7 +727,7 @@ func BuildTransformAccountTransaction(addr string, client rpc.Client, config *co
 			balance += cell.Output.Capacity
 		}
 	}
-	emptyWitness, _ := transaction.EmptyWitnessArg.Serialize()
+	emptyWitness := transaction.Secp256k1EmptyWitnessArgPlaceholder
 	tx.Witnesses[0] = emptyWitness
 
 	tx.Outputs = append(tx.Outputs, &types.CellOutput{
@@ -814,7 +815,7 @@ func BuildUdtCellTransaction(addr string, tokenIdentifier string, client rpc.Cli
 			break
 		}
 	}
-	emptyWitness, _ := transaction.EmptyWitnessArg.Serialize()
+	emptyWitness := transaction.Secp256k1EmptyWitnessArgPlaceholder
 	tx.Witnesses[0] = emptyWitness
 
 	if total < CkbCapacity+UdtCapacity {
@@ -872,11 +873,7 @@ func Transaction2TxDictOffline(inputs []btx.Input, rawTx *types.Transaction, con
 
 	for i, output := range rawTx.Outputs {
 		var addr string
-		if config.Network == "mainnet" {
-			addr, err = address.Generate(address.Mainnet, output.Lock)
-		} else {
-			addr, err = address.Generate(address.Testnet, output.Lock)
-		}
+		addr, err = LockScript2Address(output.Lock, config)
 		if err != nil {
 			return nil, err
 		}
