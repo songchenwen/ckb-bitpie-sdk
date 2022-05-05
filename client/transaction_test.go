@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"math"
+	"math/big"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
@@ -14,9 +18,6 @@ import (
 	"github.com/shaojunda/ckb-bitpie-sdk/config"
 	"github.com/shaojunda/ckb-bitpie-sdk/mocks"
 	btx "github.com/shaojunda/ckb-bitpie-sdk/utils/tx"
-	"math"
-	"math/big"
-	"testing"
 )
 
 func TestBuildNormalTransaction(t *testing.T) {

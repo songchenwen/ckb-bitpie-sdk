@@ -205,7 +205,7 @@ func GetTransaction(txHash string, client rpc.Client, config *config.Config) (*t
 }
 
 func LockScript2Address(script *types.Script, config *config.Config) (addr string, err error) {
-	fmt.Printf("LockScript2Address  codehash: %v \nhashtyep: %v \nargs: %x\n", script.CodeHash, script.HashType, script.Args)
+	// fmt.Printf("LockScript2Address  codehash: %v \nhashtyep: %v \nargs: %x\n", script.CodeHash, script.HashType, script.Args)
 	if config.Network == "mainnet" {
 		addr, err = address.ConvertScriptToShortAddress(address.Mainnet, script)
 		if err != nil {
